@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlockSentinel — Operator Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #39ff14;
+    --black: #050505;
+    --card: #0f0f0f;
+    --border: #1c1c1c;
+    --border2: #242424;
+    --text: #e0e0e0;
+    --muted: #666;
+    --danger: #ff3c3c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(57,255,20,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(57,255,20,0.025) 1px, transparent 1px);
+    background-size: 44px 44px;
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px);
+    pointer-events: none; z-index: 999; opacity: 0.5;
+  }
+
+  .glow-tl { position: fixed; top: -200px; left: -200px; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(57,255,20,0.05) 0%, transparent 65%); pointer-events: none; z-index: 0; }
+  .glow-br { position: fixed; bottom: -200px; right: -200px; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(57,255,20,0.04) 0%, transparent 65%); pointer-events: none; z-index: 0; }
+
+  /* NAV */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px; height: 60px;
+    background: rgba(5,5,5,0.95); border-bottom: 1px solid var(--border);
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    backdrop-filter: blur(8px);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo-icon { width: 34px; height: 34px; clip-path: polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%); background: rgba(57,255,20,0.1); border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; }
+  .logo-icon svg { width: 17px; height: 17px; fill: var(--green); }
+  .logo-text { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: 2px; color: white; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-links a { display: inline-block; padding: 6px 18px; background: var(--green); color: var(--black); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1.5px; text-decoration: none; text-transform: uppercase; transition: background 0.15s; }
+  .nav-links a:hover { background: white; }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .nav-username { font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--green); letter-spacing: 1px; }
+  .nav-avatar-btn { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,#1a3a1a,#0d200d); border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 14px; color: var(--green); box-shadow: 0 0 12px rgba(57,255,20,0.2); overflow: hidden; }
+  .nav-avatar-btn img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+  /* PAGE */
+  .page { padding-top: 60px; min-height: 100vh; position: relative; z-index: 1; }
+
+  /* HERO */
+  .profile-hero { background: linear-gradient(180deg,rgba(57,255,20,0.04) 0%,transparent 100%); border-bottom: 1px solid var(--border); padding: 40px 48px 0; position: relative; overflow: hidden; }
+  .profile-hero::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg,transparent,var(--green),transparent); opacity: 0.3; }
+  .hero-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: flex-end; gap: 32px; }
+
+  /* AVATAR ZONE */
+  .avatar-zone { position: relative; flex-shrink: 0; }
+  .avatar-ring { width: 110px; height: 110px; border-radius: 50%; border: 2px solid var(--green); padding: 3px; box-shadow: 0 0 20px rgba(57,255,20,0.25),inset 0 0 20px rgba(57,255,20,0.05); }
+  .avatar-img { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg,#0d200d 0%,#1a3a1a 100%); display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 38px; color: var(--green); letter-spacing: 2px; overflow: hidden; }
+  .avatar-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .avatar-spinner { position: absolute; inset: -6px; border-radius: 50%; border: 1px dashed rgba(57,255,20,0.25); animation: spin 12s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .avatar-edit-overlay {
+    position: absolute; bottom: 4px; right: 4px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--green); border: 2px solid var(--black);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background 0.2s; z-index: 10;
+  }
+  .avatar-edit-overlay:hover { background: #4dff26; }
+  .avatar-edit-overlay svg { width: 13px; height: 13px; fill: var(--black); }
+  #avatar-file-input { display: none; }
+
+  .hero-info { padding-bottom: 20px; flex: 1; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid rgba(57,255,20,0.3); background: rgba(57,255,20,0.06); font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--green); text-transform: uppercase; margin-bottom: 10px; }
+  .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .hero-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 36px; letter-spacing: 1px; color: white; text-transform: uppercase; line-height: 1; margin-bottom: 6px; }
+  .hero-name .hl { color: var(--green); }
+  .hero-meta { font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--muted); letter-spacing: 1px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .hero-meta .sep { color: var(--border2); }
+
+  /* CONTENT */
+  .content { max-width: 900px; margin: 0 auto; padding: 36px 48px 80px; display: flex; flex-direction: column; gap: 24px; }
+
+  /* SECTION */
+  .section { background: var(--card); border: 1px solid var(--border); position: relative; animation: fadeUp 0.35s ease both; }
+  .section:nth-child(2) { animation-delay: 0.08s; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .section::before,.section::after { content:''; position:absolute; width:12px; height:12px; }
+  .section::before { top:-1px; left:-1px; border-top:2px solid var(--green); border-left:2px solid var(--green); }
+  .section::after  { bottom:-1px; right:-1px; border-bottom:2px solid var(--green); border-right:2px solid var(--green); }
+
+  .section-header { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid var(--border); }
+  .section-title { display:flex; align-items:center; gap:8px; }
+  .section-title svg { width:15px; height:15px; fill:none; stroke:var(--green); stroke-width:2; }
+  .section-title h2 { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:13px; letter-spacing:2.5px; text-transform:uppercase; color:var(--green); }
+  .header-actions { display:flex; gap:6px; }
+  .section-body { padding:28px 20px; }
+
+  /* BUTTONS */
+  .btn-edit,.btn-save,.btn-cancel { display:flex; align-items:center; gap:6px; padding:6px 14px; border:1px solid; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; transition:all 0.2s; }
+  .btn-edit { background:transparent; border-color:var(--border2); color:var(--muted); }
+  .btn-edit svg { width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2; }
+  .btn-edit:hover { border-color:var(--green); color:var(--green); }
+  .btn-save { background:var(--green); border-color:var(--green); color:var(--black); }
+  .btn-save:hover { background:#4dff26; box-shadow:0 0 16px rgba(57,255,20,0.3); }
+  .btn-cancel { background:transparent; border-color:var(--border2); color:var(--muted); }
+  .btn-cancel:hover { border-color:var(--danger); color:var(--danger); }
+
+  /* FORM */
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px 28px; }
+  .form-grid .full { grid-column:1/-1; }
+  .form-divider { height:1px; background:var(--border); grid-column:1/-1; margin:4px 0; }
+  .form-field { display:flex; flex-direction:column; gap:7px; }
+  .form-field label { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+  .form-field label span { color:var(--green); margin-left:2px; }
+
+  .field-value { font-size:14px; color:var(--text); font-weight:500; padding:9px 0; border-bottom:1px solid var(--border); min-height:38px; }
+  .field-value.mono { font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--green); }
+  .field-value.muted { color:var(--muted); font-style:italic; }
+
+  .field-input { background:#080808; border:1px solid var(--border2); color:white; padding:9px 12px; font-family:'Barlow',sans-serif; font-size:14px; outline:none; transition:border-color 0.2s,box-shadow 0.2s; width:100%; }
+  .field-input::placeholder { color:#2a2a2a; }
+  .field-input:focus { border-color:var(--green); box-shadow:0 0 0 2px rgba(57,255,20,0.08); }
+  textarea.field-input { resize:vertical; min-height:80px; }
+  select.field-input { appearance:none; -webkit-appearance:none; cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2339ff14'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px; background-color:#080808; }
+  select.field-input option { background:#0a0a0a; }
+
+  .readonly-note { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:1px; margin-top:2px; display:none; }
+
+  /* AVATAR UPLOAD PROGRESS */
+  .avatar-uploading { position:absolute; inset:0; border-radius:50%; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:5; }
+  .avatar-uploading.active { display:flex; }
+  .upload-spinner { width:24px; height:24px; border:2px solid rgba(57,255,20,0.2); border-top:2px solid var(--green); border-radius:50%; animation:spin 0.8s linear infinite; }
+
+  /* TOAST */
+  .toast { position:fixed; bottom:30px; right:30px; padding:12px 20px; background:var(--card); border:1px solid var(--green); border-left:3px solid var(--green); font-size:13px; color:var(--green); font-family:'Share Tech Mono',monospace; letter-spacing:0.5px; z-index:1000; transform:translateX(120%); transition:transform 0.3s ease; box-shadow:0 0 20px rgba(57,255,20,0.1); }
+  .toast.show { transform:translateX(0); }
+  .toast.error { border-color:var(--danger); color:var(--danger); box-shadow:0 0 20px rgba(255,60,60,0.1); }
+
+  @media (max-width:800px) {
+    .content { padding:24px 16px 60px; }
+    .profile-hero { padding:28px 16px 0; }
+    .form-grid { grid-template-columns:1fr; }
+    .form-grid .full { grid-column:1; }
+    .nav-links { display:none; }
+    .hero-name { font-size:26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="glow-tl"></div>
+<div class="glow-br"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V6l-8-4z"/></svg></div>
+    <span class="logo-text">BLOCKSENTINEL</span>
+  </a>
+  <div class="nav-links">
+    <a href="/">HOME</a>
+    <a href="/dashboard">DASHBOARD</a>
+    {% if 'user' in session %}
+        <a href="/logout">LOGOUT</a>
+    {% else %}
+        <a href="/loginpage">LOGIN</a>
+    {% endif %}
+  </div>
+  <div class="nav-right">
+    <span class="nav-username" id="nav-uname">{{ user.username }}</span>
+    <div class="nav-avatar-btn" id="nav-avatar">
+      {% if user.profile_pic %}
+        <img src="{{ user.profile_pic }}" alt="avatar" id="nav-avatar-img">
+      {% else %}
+        <span id="nav-avatar-initials">{{ (user.FirstName[0] if user.FirstName else '') + (user.LastName[0] if user.LastName else '') }}</span>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="profile-hero">
+    <div class="hero-inner">
+
+      <div class="avatar-zone">
+        <div class="avatar-spinner"></div>
+        <div class="avatar-ring">
+          <div class="avatar-img" id="avatar-el">
+            {% if user.profile_pic %}
+              <img src="{{ user.profile_pic }}" alt="profile" id="hero-avatar-img">
+            {% else %}
+              <span id="avatar-initials-text">{{ (user.FirstName[0] if user.FirstName else '') + (user.LastName[0] if user.LastName else '') }}</span>
+            {% endif %}
+          </div>
+          <div class="avatar-uploading" id="avatar-uploading">
+            <div class="upload-spinner"></div>
+          </div>
+        </div>
+        <label class="avatar-edit-overlay" for="avatar-file-input" title="Change profile picture">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </label>
+        <input type="file" id="avatar-file-input" accept="image/*" onchange="uploadAvatar(this)">
+      </div>
+
+      <div class="hero-info">
+        <div class="hero-badge">Verified Operator</div>
+        <h1 class="hero-name">
+          <span class="hl" id="h-fname">{{ user.FirstName or 'First' }}</span>&nbsp;<span id="h-lname">{{ user.LastName or 'Last' }}</span>
+        </h1>
+        <div class="hero-meta">
+          <span id="h-uname">@{{ user.username }}</span>
+          <span class="sep">|</span>
+          <span id="h-country">{{ user.country or 'Location not set' }}</span>
+          {% if user.mobile_number %}
+          <span class="sep">|</span>
+          <span id="h-mobile">{{ user.mobile_number }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- PROFILE INFO -->
+    <div class="section" id="prof-section">
+      <div class="section-header">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <h2>Profile Information</h2>
+        </div>
+        <div class="header-actions">
+          <button class="btn-cancel" id="btn-cancel" onclick="cancelEdit()" style="display:none;">✕ Cancel</button>
+          <button class="btn-save"   id="btn-save"   onclick="saveProfile()" style="display:none;">✓ Save Changes</button>
+          <button class="btn-edit"   id="btn-edit"   onclick="startEdit()">
+            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit
+          </button>
+        </div>
+      </div>
+
+      <div class="section-body" id="prof-body">
+        <div class="form-grid">
+
+          <!-- First Name -->
+          <div class="form-field">
+            <label>First Name <span>*</span></label>
+            <div class="field-value" id="v-fname">{{ user.FirstName or 'Not set' }}</div>
+            <input class="field-input" id="i-fname" type="text" value="{{ user.FirstName or '' }}" placeholder="First name" oninput="liveSync()" style="display:none;">
+          </div>
+
+          <!-- Last Name -->
+          <div class="form-field">
+            <label>Last Name <span>*</span></label>
+            <div class="field-value" id="v-lname">{{ user.LastName or 'Not set' }}</div>
+            <input class="field-input" id="i-lname" type="text" value="{{ user.LastName or '' }}" placeholder="Last name" oninput="liveSync()" style="display:none;">
+          </div>
+
+          <!-- Mobile Number -->
+          <div class="form-field">
+            <label>Mobile Number</label>
+            <div class="field-value {% if not user.mobile_number %}muted{% endif %}" id="v-mobile">{{ user.mobile_number or 'Not set' }}</div>
+            <input class="field-input" id="i-mobile" type="tel" value="{{ user.mobile_number or '' }}" placeholder="+91 98765 43210" style="display:none;">
+          </div>
+
+          <!-- Country -->
+          <div class="form-field">
+            <label>Country</label>
+            <div class="field-value {% if not user.country %}muted{% endif %}" id="v-country">{{ user.country or 'Not set' }}</div>
+            <select class="field-input" id="i-country" style="display:none;">
+              {% set countries = ['Afghanistan','Albania','Algeria','Argentina','Australia','Austria','Bangladesh','Belgium','Brazil','Canada','Chile','China','Colombia','Croatia','Czech Republic','Denmark','Egypt','Ethiopia','Finland','France','Germany','Ghana','Greece','Hungary','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Japan','Jordan','Kenya','South Korea','Malaysia','Mexico','Morocco','Netherlands','New Zealand','Nigeria','Norway','Pakistan','Peru','Philippines','Poland','Portugal','Romania','Russia','Saudi Arabia','Singapore','South Africa','Spain','Sri Lanka','Sweden','Switzerland','Taiwan','Thailand','Turkey','Ukraine','United Arab Emirates','United Kingdom','United States','Vietnam','Other'] %}
+              <option value="">-- Select country --</option>
+              {% for c in countries %}
+              <option value="{{ c }}" {% if user.country == c %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-divider"></div>
+
+          <!-- Username (read-only) -->
+          <div class="form-field">
+            <label>Username</label>
+            <div class="field-value mono" id="v-uname">{{ user.username }}</div>
+            <input class="field-input" id="i-uname" type="text" value="{{ user.username }}" disabled style="display:none;opacity:0.5;cursor:not-allowed;">
+            <div class="readonly-note" id="uname-note">Username cannot be changed</div>
+          </div>
+
+          <!-- Bio -->
+          <div class="form-field full">
+            <label>Bio</label>
+            <div class="field-value {% if not user.bio %}muted{% endif %}" id="v-bio">{{ user.bio or 'No bio added yet.' }}</div>
+            <textarea class="field-input" id="i-bio" placeholder="Describe yourself or your organization..." style="display:none;">{{ user.bio or '' }}</textarea>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── Toast helper
+  let toastTimer;
+  function toast(msg, isError=false) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast show' + (isError ? ' error' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.className = 'toast', 3500);
+  }
+
+  // ── Toggle helpers
+  function showInputs() {
+    ['i-fname','i-lname','i-mobile','i-country','i-uname','i-bio'].forEach(id => {
+      document.getElementById(id).style.display = id === 'i-bio' ? 'block' : 'block';
+    });
+    ['v-fname','v-lname','v-mobile','v-country','v-uname','v-bio'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+  }
+  function hideInputs() {
+    ['i-fname','i-lname','i-mobile','i-country','i-uname','i-bio'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    ['v-fname','v-lname','v-mobile','v-country','v-uname','v-bio'].forEach(id => {
+      document.getElementById(id).style.display = '';
+    });
+  }
+
+  // ── Profile edit toggle
+  function startEdit() {
+    showInputs();
+    document.getElementById('btn-edit').style.display   = 'none';
+    document.getElementById('btn-save').style.display   = 'flex';
+    document.getElementById('btn-cancel').style.display = 'flex';
+    document.getElementById('uname-note').style.display = 'block';
+  }
+
+  function cancelEdit() {
+    hideInputs();
+    document.getElementById('btn-edit').style.display   = 'flex';
+    document.getElementById('btn-save').style.display   = 'none';
+    document.getElementById('btn-cancel').style.display = 'none';
+    document.getElementById('uname-note').style.display = 'none';
+    // Revert inputs to current displayed values
+    const getText = (id, empty) => { const t = document.getElementById(id).textContent.trim(); return t === empty ? '' : t; };
+    document.getElementById('i-fname').value  = getText('v-fname', 'Not set');
+    document.getElementById('i-lname').value  = getText('v-lname', 'Not set');
+    document.getElementById('i-mobile').value = getText('v-mobile', 'Not set');
+    document.getElementById('i-bio').value    = getText('v-bio', 'No bio added yet.');
+    const countryVal = document.getElementById('v-country').textContent.trim();
+    const sel = document.getElementById('i-country');
+    for (let o of sel.options) { if (o.value === countryVal || o.text === countryVal) { sel.value = o.value; break; } }
+  }
+
+  function saveProfile() {
+    const fname   = document.getElementById('i-fname').value.trim();
+    const lname   = document.getElementById('i-lname').value.trim();
+    const mobile  = document.getElementById('i-mobile').value.trim();
+    const bio     = document.getElementById('i-bio').value.trim();
+    const country = document.getElementById('i-country').value;
+
+    if (!fname) { toast('⚠ First name is required', true); return; }
+    if (!lname) { toast('⚠ Last name is required', true); return; }
+
+    const btn = document.getElementById('btn-save');
+    btn.textContent = '... Saving';
+    btn.disabled = true;
+
+    fetch('/profile/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ FirstName: fname, LastName: lname, mobile_number: mobile, bio: bio, country: country })
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.innerHTML = '✓ Save Changes';
+      btn.disabled = false;
+      if (data.success) {
+        // Update displayed values
+        setFieldValue('v-fname',   fname,   false);
+        setFieldValue('v-lname',   lname,   false);
+        setFieldValue('v-mobile',  mobile,  false);
+        setFieldValue('v-bio',     bio,     false, 'No bio added yet.');
+        setFieldValue('v-country', country, false);
+        // Sync hero
+        document.getElementById('h-fname').textContent   = fname;
+        document.getElementById('h-lname').textContent   = lname;
+        document.getElementById('h-country').textContent = country || 'Location not set';
+        updateInitials(((fname[0]||'') + (lname[0]||'')).toUpperCase());
+        // Back to view mode
+        hideInputs();
+        document.getElementById('btn-edit').style.display   = 'flex';
+        document.getElementById('btn-save').style.display   = 'none';
+        document.getElementById('btn-cancel').style.display = 'none';
+        document.getElementById('uname-note').style.display = 'none';
+        toast('✓ Profile updated successfully');
+      } else {
+        toast('⚠ ' + (data.error || 'Update failed'), true);
+      }
+    })
+    .catch(() => {
+      btn.innerHTML = '✓ Save Changes';
+      btn.disabled = false;
+      toast('⚠ Network error. Please try again.', true);
+    });
+  }
+
+  function setFieldValue(id, val, mono, emptyText) {
+    const el = document.getElementById(id);
+    if (val) {
+      el.textContent = val;
+      el.className = 'field-value' + (mono ? ' mono' : '');
+    } else {
+      el.textContent = emptyText || 'Not set';
+      el.className = 'field-value muted';
+    }
+  }
+
+  function updateInitials(initials) {
+    const heroText = document.getElementById('avatar-initials-text');
+    const navText  = document.getElementById('nav-avatar-initials');
+    if (heroText) heroText.textContent = initials;
+    if (navText)  navText.textContent  = initials;
+  }
+
+  function liveSync() {
+    const fn = document.getElementById('i-fname').value || 'First';
+    const ln = document.getElementById('i-lname').value || 'Last';
+    document.getElementById('h-fname').textContent = fn;
+    document.getElementById('h-lname').textContent = ln;
+    updateInitials(((fn[0]||'') + (ln[0]||'')).toUpperCase());
+  }
+
+  // ── Profile Picture Upload
+  function uploadAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    if (file.size > 5 * 1024 * 1024) { toast('⚠ Image must be under 5MB', true); return; }
+
+    const uploading = document.getElementById('avatar-uploading');
+    uploading.classList.add('active');
+
+    const formData = new FormData();
+    formData.append('profile_pic', file);
+
+    fetch('/profile/upload-avatar', { method: 'POST', body: formData })
+    .then(r => r.json())
+    .then(data => {
+      uploading.classList.remove('active');
+      if (data.success) {
+        const url = data.url + '?t=' + Date.now();
+        const avatarEl = document.getElementById('avatar-el');
+        let img = document.getElementById('hero-avatar-img');
+        if (!img) {
+          avatarEl.innerHTML = '';
+          img = document.createElement('img');
+          img.id = 'hero-avatar-img';
+          avatarEl.appendChild(img);
+        }
+        img.src = url;
+        const navBtn = document.getElementById('nav-avatar');
+        let navImg = document.getElementById('nav-avatar-img');
+        if (!navImg) {
+          navBtn.innerHTML = '';
+          navImg = document.createElement('img');
+          navImg.id = 'nav-avatar-img';
+          navBtn.appendChild(navImg);
+        }
+        navImg.src = url;
+        toast('✓ Profile picture updated');
+      } else {
+        toast('⚠ ' + (data.error || 'Upload failed'), true);
+      }
+    })
+    .catch(() => {
+      uploading.classList.remove('active');
+      toast('⚠ Upload failed. Please try again.', true);
+    });
+
+    input.value = '';
+  }
+</script>
+</body>
+</html>

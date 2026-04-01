@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlockSentinel — Auth</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #39ff14;
+    --green-dim: #2bcc0f;
+    --green-glow: rgba(57,255,20,0.18);
+    --black: #050505;
+    --dark: #0d0d0d;
+    --card: #111111;
+    --border: #1e1e1e;
+    --text: #e8e8e8;
+    --muted: #777;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 60px;
+    background: var(--black);
+    border-bottom: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 34px; height: 34px;
+    border: 2px solid var(--green);
+    display: flex; align-items: center; justify-content: center;
+    clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+    background: rgba(57,255,20,0.08);
+  }
+
+  .logo-icon svg { width: 18px; height: 18px; fill: var(--green); }
+
+  .logo-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: white;
+  }
+
+  .nav-links { display: flex; gap: 4px; }
+
+  .nav-links a {
+    display: inline-block;
+    padding: 6px 18px;
+    background: var(--green);
+    color: var(--black);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .nav-links a:hover { background: white; }
+
+  .nav-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #222;
+    border: 1px solid #333;
+  }
+
+  /* MAIN LAYOUT */
+  main {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Glow blob */
+  .glow-blob {
+    position: fixed;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(57,255,20,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    transition: all 1s ease;
+  }
+  .glow-blob.left { left: -150px; top: 20%; }
+  .glow-blob.right { right: -150px; bottom: 20%; }
+
+  /* AUTH CONTAINER */
+  .auth-wrapper {
+    width: 100%;
+    max-width: 460px;
+    padding: 24px 16px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .auth-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .auth-header h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 38px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: white;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .auth-header h1 span { color: var(--green); }
+
+  .auth-header p {
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* TABS */
+  .auth-tabs {
+    display: flex;
+    border: 1px solid var(--border);
+    margin-bottom: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: all 0.2s;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tab-btn.active {
+    color: var(--black);
+    background: var(--green);
+  }
+
+  .tab-btn:not(.active):hover { color: var(--green); }
+
+  /* CARD */
+  .auth-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 36px 36px 32px;
+    position: relative;
+  }
+
+  .auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    opacity: 0.5;
+  }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* FORM ELEMENTS */
+  .field { margin-bottom: 20px; }
+
+  .field label {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .field label span { color: var(--green); margin-left: 2px; }
+
+  .input-wrap {
+    position: relative;
+  }
+
+  .input-wrap .icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .input-wrap .icon svg {
+    width: 16px; height: 16px;
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 2;
+  }
+
+  .field input {
+    width: 100%;
+    background: #0a0a0a;
+    border: 1px solid var(--border);
+    color: white;
+    padding: 12px 14px 12px 42px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .field input::placeholder { color: #333; }
+
+  .field input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 2px rgba(57,255,20,0.1), inset 0 0 20px rgba(57,255,20,0.03);
+  }
+
+  /* Toggle password */
+  .toggle-pw {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.15s;
+    padding: 0;
+    line-height: 0;
+  }
+  .toggle-pw:hover { opacity: 1; }
+  .toggle-pw svg { width: 16px; height: 16px; fill: none; stroke: var(--green); stroke-width: 2; }
+
+  /* Field row */
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* Checkbox */
+  .check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .check-row input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: var(--green);
+    cursor: pointer;
+  }
+
+  .check-row label {
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .check-row label a { color: var(--green); text-decoration: none; }
+  .check-row label a:hover { text-decoration: underline; }
+
+  /* Forgot */
+  .forgot-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -14px;
+    margin-bottom: 22px;
+  }
+  .forgot-row a {
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    transition: color 0.15s;
+  }
+  .forgot-row a:hover { color: var(--green); }
+
+  /* STRENGTH BAR */
+  .strength-bar {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .strength-bar div {
+    flex: 1;
+    height: 3px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+  .strength-bar div.active { background: var(--green); }
+  .strength-bar div.medium { background: #f5a623; }
+  .strength-bar div.weak { background: #e74c3c; }
+  .strength-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 5px;
+    letter-spacing: 1px;
+  }
+
+  /* SUBMIT BUTTON */
+  .btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: var(--green);
+    color: var(--black);
+    border: none;
+    cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-submit::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.4s;
+  }
+
+  .btn-submit:hover { background: #4dff26; box-shadow: 0 0 24px rgba(57,255,20,0.4); }
+  .btn-submit:hover::after { transform: translateX(100%); }
+  .btn-submit:active { transform: scale(0.99); }
+
+  /* DIVIDER */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .divider span {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* WALLET CONNECT */
+  .btn-wallet {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .btn-wallet:hover {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(57,255,20,0.04);
+  }
+  .btn-wallet svg { width: 18px; height: 18px; }
+
+  /* SWITCH TEXT */
+  .switch-text {
+    text-align: center;
+    margin-top: 22px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .switch-text a {
+    color: var(--green);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .switch-text a:hover { text-decoration: underline; }
+
+  /* SCAN LINES */
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.4;
+  }
+
+  /* CORNER DECORATIONS */
+  .corner-tl, .corner-br {
+    position: absolute;
+    width: 16px; height: 16px;
+  }
+  .corner-tl { top: -1px; left: -1px; border-top: 2px solid var(--green); border-left: 2px solid var(--green); }
+  .corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--green); border-right: 2px solid var(--green); }
+
+  /* Status dot */
+  .status-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .status-dot::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .auth-flash {
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+  }
+  .auth-flash-error {
+    background: rgba(220, 53, 69, 0.12);
+    border: 1px solid rgba(220, 53, 69, 0.45);
+    color: #ff9a9a;
+  }
+  .auth-flash-success {
+    background: rgba(57, 255, 20, 0.08);
+    border: 1px solid rgba(57, 255, 20, 0.35);
+    color: #b8ffb8;
+  }
+</style>
+</head>
+<body>
+
+<div class="scanlines"></div>
+<div class="glow-blob left"></div>
+<div class="glow-blob right"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V6l-8-4z"/></svg>
+    </div>
+    <span class="logo-text">BLOCKSENTINEL</span>
+  </a>
+  <div class="nav-links">
+    <a href="/">HOME</a>
+    <a href="/dashboard">DASHBOARD</a>
+    {% if 'user' in session %}
+        <a href="/logout">LOGOUT</a>
+    {% else %}
+        <a href="/loginpage">LOGIN</a>
+    {% endif %}
+  </div>
+  <div class="nav-avatar"></div>
+</nav>
+
+<!-- MAIN -->
+<main>
+  <div class="auth-wrapper">
+
+    <div class="auth-header">
+      <h1>ACCESS <span>SENTINEL</span></h1>
+      <p>Secure authentication for blockchain risk intelligence</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="auth-flash auth-flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- TABS -->
+    <div class="auth-tabs">
+      <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Login</button>
+      <button class="tab-btn" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- CARD -->
+    <div class="auth-card">
+      <div class="corner-tl"></div>
+      <div class="corner-br"></div>
+
+      <!-- ─── LOGIN PANEL ─── -->
+      <div class="panel active" id="panel-login">
+
+        <div class="status-dot">System Active</div>
+
+        <!-- Flask: render flashed messages here -->
+        <!-- {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}
+            <div class="alert {{ 'error' if category == 'error' else '' }}">{{ message }}</div>
+          {% endfor %}
+        {% endwith %} -->
+
+        <form action="/login" method="POST">
+
+          <div class="field">
+            <label>Email Address <span>*</span></label>
+            <div class="input-wrap">
+              <span class="icon">
+                <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+              </span>
+              <input type="email" name="email" placeholder="operator@blocksentinel.io" autocomplete="email" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Password <span>*</span></label>
+            <div class="input-wrap">
+              <span class="icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <input type="password" name="password" id="login-password" placeholder="••••••••••••" autocomplete="current-password" required>
+              <button type="button" class="toggle-pw" onclick="togglePw('login-password',this)" tabindex="-1">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="forgot-row">
+            <a href="/forgot-password">Forgot password?</a>
+          </div>
+
+
+          <button type="submit" class="btn-submit">▶ &nbsp; AUTHENTICATE</button>
+        </form>
+
+        <div class="divider"></div>
+
+
+        <div class="switch-text">
+          No account? <a onclick="switchTab('signup')">Create one →</a>
+        </div>
+      </div>
+
+      <!-- ─── SIGNUP PANEL ─── -->
+      <div class="panel" id="panel-signup">
+
+        <div class="status-dot">New Operator Registration</div>
+
+        <!-- Flask: render flashed messages here -->
+        <!-- {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}
+            <div class="alert {{ 'error' if category == 'error' else '' }}">{{ message }}</div>
+          {% endfor %}
+        {% endwith %} -->
+
+        <form action="/register" method="POST">
+
+          <div class="field-row">
+            <div class="field">
+              <label>First Name <span>*</span></label>
+              <div class="input-wrap">
+                <span class="icon">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                </span>
+                <input type="text" name="first_name" placeholder="Satoshi" autocomplete="given-name" required>
+              </div>
+            </div>
+            <div class="field">
+              <label>Last Name <span>*</span></label>
+              <div class="input-wrap">
+                <span class="icon">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                </span>
+                <input type="text" name="last_name" placeholder="Nakamoto" autocomplete="family-name" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Email Address <span>*</span></label>
+            <div class="input-wrap">
+              <span class="icon">
+                <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+              </span>
+              <input type="email" name="email" placeholder="operator@blocksentinel.io" autocomplete="email" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Password <span>*</span></label>
+            <div class="input-wrap">
+              <span class="icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <input type="password" name="password" id="signup-password" placeholder="••••••••••••" oninput="checkStrength(this.value)" autocomplete="new-password" required>
+              <button type="button" class="toggle-pw" onclick="togglePw('signup-password',this)" tabindex="-1">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="strength-bar">
+              <div id="s1"></div><div id="s2"></div><div id="s3"></div><div id="s4"></div>
+            </div>
+            <div class="strength-label" id="strength-label"></div>
+          </div>
+
+          <div class="field">
+            <label>Confirm Password <span>*</span></label>
+            <div class="input-wrap">
+              <span class="icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <input type="password" name="confirm_password" id="confirm-password" placeholder="••••••••••••" autocomplete="new-password" required>
+              <button type="button" class="toggle-pw" onclick="togglePw('confirm-password',this)" tabindex="-1">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+
+          <button type="submit" class="btn-submit">▶ &nbsp; CREATE ACCOUNT</button>
+        </form>
+
+        
+
+        <div class="switch-text">
+          Already an operator? <a onclick="switchTab('login')">Sign in →</a>
+        </div>
+      </div>
+
+    </div><!-- /auth-card -->
+  </div><!-- /auth-wrapper -->
+</main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get('tab') === 'signup') switchTab('signup');
+  });
+
+  // Tab switcher — UI only
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+  }
+
+  // Password visibility toggle — UI only
+  function togglePw(id, btn) {
+    const inp = document.getElementById(id);
+    if (inp.type === 'password') {
+      inp.type = 'text';
+      btn.style.opacity = '1';
+    } else {
+      inp.type = 'password';
+      btn.style.opacity = '0.4';
+    }
+  }
+
+  // Password strength indicator — UI only
+  function checkStrength(val) {
+    const bars = [document.getElementById('s1'), document.getElementById('s2'),
+                  document.getElementById('s3'), document.getElementById('s4')];
+    const label = document.getElementById('strength-label');
+    bars.forEach(b => { b.className = ''; });
+
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const colors = ['weak', 'weak', 'medium', 'active'];
+    const labels = ['', 'WEAK', 'MODERATE', 'STRONG', 'UNBREAKABLE'];
+    for (let i = 0; i < score; i++) bars[i].className = colors[score - 1];
+    label.textContent = val.length ? labels[score] : '';
+  }
+</script>
+</body>
+</html>

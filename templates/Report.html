@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TOKEN_NAME}} — Risk Assessment Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+/* ─── PRINT ─────────────────────────────────────── */
+@page { size: A4; margin: 0; }
+@media print {
+  html, body { width: 210mm; }
+  .page { page-break-after: always; box-shadow: none !important; }
+  .page:last-child { page-break-after: avoid; }
+  .no-print { display: none !important; }
+}
+
+/* ─── TOKENS ─────────────────────────────────────── */
+:root {
+  --ink:       #1a1c22;
+  --ink-light: #4a4f5e;
+  --ink-faint: #8a909f;
+  --rule:      #d8dce6;
+  --rule-light:#eef0f5;
+  --page-bg:   #fafaf8;
+  --surface:   #ffffff;
+  --accent:    #1b3a6b;
+  --accent2:   #c8a96e;
+  --danger:    #8b1a1a;
+  --warn:      #7a5200;
+  --ok:        #1a4d2e;
+  --danger-bg: #fdf3f3;
+  --warn-bg:   #fdf8ef;
+  --ok-bg:     #f2faf5;
+  --sans:      'IBM Plex Sans', sans-serif;
+  --serif:     'Playfair Display', serif;
+  --mono:      'IBM Plex Mono', monospace;
+}
+
+/* ─── RESET ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #e4e4e0;
+  font-family: var(--sans);
+  color: var(--ink);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ─── PAGE ───────────────────────────────────────── */
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  background: var(--page-bg);
+  margin: 0 auto 28px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 40px rgba(0,0,0,.18);
+  position: relative;
+}
+
+.cover-stripe { background: var(--accent); height: 6px; width: 100%; }
+.cover-stripe-gold { background: var(--accent2); height: 2px; width: 100%; }
+
+/* ─── TOP RULE ───────────────────────────────────── */
+.top-rule {
+  display: flex;
+  align-items: center;
+  padding: 16px 48px;
+  border-bottom: 1px solid var(--rule);
+}
+.top-rule-brand {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  flex: 1;
+}
+.top-rule-meta {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+  letter-spacing: .5px;
+}
+
+/* ─── COVER BODY ─────────────────────────────────── */
+.cover-body {
+  padding: 56px 48px 40px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.report-type {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 18px;
+}
+
+.cover-title {
+  font-family: var(--serif);
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--accent);
+  margin-bottom: 8px;
+  letter-spacing: -.5px;
+}
+
+.cover-subtitle {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--ink-light);
+  margin-bottom: 44px;
+}
+
+.cover-rule { width: 56px; height: 2px; background: var(--accent2); margin-bottom: 36px; }
+
+.cover-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--rule);
+}
+.cover-meta-cell {
+  padding: 18px 22px;
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.cover-meta-cell:nth-child(3),
+.cover-meta-cell:nth-child(6) { border-right: none; }
+.cover-meta-cell:nth-child(4),
+.cover-meta-cell:nth-child(5),
+.cover-meta-cell:nth-child(6) { border-bottom: none; }
+.cover-meta-label {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+}
+.cover-meta-value {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink);
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.cover-verdict {
+  margin-top: 36px;
+  padding: 22px 26px;
+  border-left: 3px solid var(--danger);
+  background: var(--danger-bg);
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+.verdict-score-block { flex-shrink: 0; text-align: center; min-width: 68px; }
+.verdict-score-num {
+  font-family: var(--serif);
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--danger);
+  line-height: 1;
+}
+.verdict-score-denom { font-size: 9px; color: var(--ink-faint); margin-top: 3px; letter-spacing: 1px; }
+.verdict-label {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--danger);
+  margin-bottom: 7px;
+}
+.verdict-text { font-size: 10.5px; color: var(--ink-light); line-height: 1.7; }
+
+.cover-bottom-rule {
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 55%, transparent 100%);
+  margin-top: auto;
+}
+
+/* ─── PAGE HEADER ────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 48px;
+  border-bottom: 1px solid var(--rule);
+}
+.page-header-left {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.page-header-right {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+}
+
+/* ─── SECTION ────────────────────────────────────── */
+.section {
+  padding: 30px 48px;
+  border-bottom: 1px solid var(--rule-light);
+}
+.section:last-of-type { border-bottom: none; }
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.section-num {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--accent2);
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.section-title {
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+/* ─── SCORE ROW ──────────────────────────────────── */
+.score-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.score-cell { background: var(--surface); padding: 20px 22px; }
+.score-cell-label {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 8px;
+}
+.score-cell-value {
+  font-family: var(--serif);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+.score-cell-value.danger { color: var(--danger); }
+.score-cell-value.warn   { color: var(--warn); }
+.score-cell-value.ok     { color: var(--ok); }
+.score-cell-value.neutral{ color: var(--accent); }
+.score-cell-sub { font-size: 9px; color: var(--ink-faint); line-height: 1.5; }
+
+/* ─── ABSTRACT ───────────────────────────────────── */
+.abstract { font-size: 10.5px; color: var(--ink-light); line-height: 1.85; columns: 2; column-gap: 32px; }
+.inline-alert {
+  padding: 13px 16px;
+  border-left: 3px solid var(--warn);
+  background: var(--warn-bg);
+  font-size: 10px;
+  color: var(--ink-light);
+  line-height: 1.65;
+  margin-top: 14px;
+  break-inside: avoid;
+}
+.inline-alert strong { color: var(--warn); font-weight: 600; }
+
+/* ─── VECTOR BARS ────────────────────────────────── */
+.vector-table { width: 100%; border-collapse: collapse; }
+.vector-table td {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule-light);
+  vertical-align: middle;
+}
+.vector-table tr:last-child td { border-bottom: none; }
+.vector-name { font-size: 10px; font-weight: 500; color: var(--ink); width: 90px; }
+.vector-bar-wrap { padding: 0 16px; }
+.vector-track { height: 5px; background: var(--rule-light); border-radius: 2px; overflow: hidden; }
+.vector-fill { height: 100%; border-radius: 2px; }
+.vector-fill.danger { background: var(--danger); }
+.vector-fill.warn   { background: var(--warn); }
+.vector-fill.ok     { background: var(--ok); }
+.vector-score { font-family: var(--mono); font-size: 10px; color: var(--ink); width: 48px; text-align: right; }
+.vector-rating { width: 80px; text-align: right; }
+
+/* ─── RATING BADGE ───────────────────────────────── */
+.rating {
+  display: inline-flex;
+  align-items: center;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+.rating.critical { background: var(--danger-bg); color: var(--danger); border: 1px solid #e0b8b8; }
+.rating.high     { background: var(--danger-bg); color: var(--danger); border: 1px solid #e0b8b8; }
+.rating.caution  { background: var(--warn-bg);   color: var(--warn);   border: 1px solid #e0d0a0; }
+.rating.low      { background: var(--ok-bg);     color: var(--ok);     border: 1px solid #a8d8b8; }
+
+/* ─── DATA TABLE ─────────────────────────────────── */
+.data-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+.data-table th {
+  text-align: left;
+  padding: 9px 14px;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  background: var(--rule-light);
+  border-bottom: 1px solid var(--rule);
+}
+.data-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rule-light);
+  color: var(--ink);
+  vertical-align: top;
+  line-height: 1.55;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table td.field { font-family: var(--mono); font-size: 9.5px; color: var(--accent); white-space: nowrap; font-weight: 500; }
+.data-table td.value { font-family: var(--mono); font-size: 10px; color: var(--ink); font-weight: 500; }
+.data-table td.interp { font-size: 10px; color: var(--ink-light); }
+.data-table tr:hover td { background: #f7f7f5; }
+
+/* ─── FINDINGS GRID ──────────────────────────────── */
+.findings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.finding-cell { background: var(--surface); padding: 15px 18px; }
+.finding-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.finding-num { font-family: var(--mono); font-size: 8px; color: var(--ink-faint); flex-shrink: 0; margin-top: 2px; }
+.finding-title { font-size: 10px; font-weight: 600; color: var(--ink); flex: 1; line-height: 1.4; }
+.finding-body { font-size: 9px; color: var(--ink-light); line-height: 1.65; }
+
+/* ─── DISTRIBUTION ───────────────────────────────── */
+.dist-bar {
+  display: flex;
+  height: 20px;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.dist-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  font-weight: 500;
+}
+.dist-seg.top10 { background: var(--accent); color: #fff; }
+.dist-seg.top1  { background: var(--danger); color: #fff; }
+.dist-seg.rest  { background: var(--rule-light); color: var(--ink-faint); }
+.dist-legend { display: flex; gap: 22px; margin-bottom: 16px; }
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 9.5px; color: var(--ink-light); }
+.legend-swatch { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+.legend-swatch.top10 { background: var(--accent); }
+.legend-swatch.top1  { background: var(--danger); }
+.legend-swatch.rest  { background: var(--rule); border: 1px solid var(--rule); }
+.dist-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.dist-card { background: var(--surface); padding: 16px 18px; }
+.dist-card-pct { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+.dist-card-pct.danger { color: var(--danger); }
+.dist-card-pct.ok     { color: var(--ok); }
+.dist-card-title { font-size: 8.5px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; }
+.dist-card-body { font-size: 9.5px; color: var(--ink-light); line-height: 1.65; border-top: 1px solid var(--rule-light); padding-top: 9px; }
+
+/* ─── VULN CARDS ─────────────────────────────────── */
+.vuln-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.vuln-card { background: var(--surface); padding: 18px 20px; }
+.vuln-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 13px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule-light);
+}
+.vuln-card-title { font-family: var(--serif); font-size: 13px; font-weight: 600; color: var(--ink); }
+.vuln-section-title {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 4px;
+  margin-top: 10px;
+}
+.vuln-text { font-size: 9.5px; color: var(--ink-light); line-height: 1.65; }
+
+/* ─── RECOMMENDATIONS ────────────────────────────── */
+.rec-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.rec-group-title {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 11px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule);
+}
+.rec-item { display: flex; gap: 11px; padding: 10px 0; border-bottom: 1px solid var(--rule-light); align-items: flex-start; }
+.rec-item:last-child { border-bottom: none; }
+.rec-bullet {
+  width: 20px; height: 20px;
+  border: 1px solid var(--accent);
+  border-radius: 2px;
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.rec-text { font-size: 10px; color: var(--ink-light); line-height: 1.65; }
+
+.conclusion-box {
+  margin-top: 18px;
+  padding: 20px 22px;
+  border-left: 3px solid var(--danger);
+  background: var(--danger-bg);
+}
+.conclusion-label { font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--danger); margin-bottom: 6px; }
+.conclusion-text { font-size: 10.5px; color: var(--ink); line-height: 1.7; }
+
+/* ─── FOOTER ─────────────────────────────────────── */
+.page-footer {
+  margin-top: auto;
+  padding: 13px 48px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.footer-disclaimer { font-size: 7.5px; color: var(--ink-faint); line-height: 1.6; max-width: 420px; }
+.footer-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.footer-brand { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); }
+.footer-page { font-family: var(--mono); font-size: 9px; color: var(--ink-faint); }
+
+/* ─── PRINT BUTTON ───────────────────────────────── */
+.print-btn {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 13px 24px;
+  border-radius: 3px;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(27,58,107,.3);
+  transition: background .15s;
+}
+.print-btn:hover { background: #152d54; }
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 1 — COVER
+══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="cover-stripe"></div>
+  <div class="cover-stripe-gold"></div>
+
+  <div class="top-rule">
+    <div class="top-rule-brand">{{REPORT_BRAND}}</div>
+    <div class="top-rule-meta">Smart Contract Risk Assessment &nbsp;·&nbsp; Confidential</div>
+  </div>
+
+  <div class="cover-body">
+    <div class="report-type">Digital Asset Risk Report</div>
+    <div class="cover-title">{{TOKEN_NAME}}</div>
+    <div class="cover-subtitle">Comprehensive Smart Contract &amp; Market Risk Evaluation</div>
+    <div class="cover-rule"></div>
+
+    <div class="cover-meta-grid">
+      <div class="cover-meta-cell">
+        <div class="cover-meta-label">Token Symbol</div>
+        <div class="cover-meta-value">{{TOKEN_SYMBOL}}</div>
+      </div>
+      <div class="cover-meta-cell">
+        <div class="cover-meta-label">Blockchain Network</div>
+        <div class="cover-meta-value">{{TOKEN_CHAIN}}</div>
+      </div>
+      <div class="cover-meta-cell">
+        <div class="cover-meta-label">Report Date</div>
+        <div class="cover-meta-value">{{GENERATION_DATE}}</div>
+      </div>
+      <div class="cover-meta-cell">
+        <div class="cover-meta-label">Contract Address</div>
+        <div class="cover-meta-value" style="font-size:9px;">{{CONTRACT_ADDRESS}}</div>
+      </div>
+      <div class="cover-meta-cell">
+        <div class="cover-meta-label">Total Supply</div>
+        <div class="cover-meta-value">{{TOKEN_TOTAL_SUPPLY}}</div>
+      </div>
+      <div class="cover-meta-cell">
+        <div class="cover-meta-label">Prepared By</div>
+        <div class="cover-meta-value">{{PREPARED_BY}}</div>
+      </div>
+    </div>
+
+    <div class="cover-verdict">
+      <div class="verdict-score-block">
+        <div class="verdict-score-num">{{OVERALL_RISK_SCORE_NUM}}</div>
+        <div class="verdict-score-denom">out of 100</div>
+      </div>
+      <div>
+        <div class="verdict-label">Overall Risk Assessment — {{OVERALL_RISK_LABEL}}</div>
+        <div class="verdict-text">{{RISK_ALERT_TEXT}}</div>
+      </div>
+    </div>
+
+    <div class="cover-bottom-rule"></div>
+  </div>
+
+  <div class="page-footer">
+    <div class="footer-disclaimer">This report is prepared for informational purposes only and does not constitute investment advice. Recipients should conduct their own due diligence before making any financial decisions.</div>
+    <div class="footer-right">
+      <span class="footer-brand">{{REPORT_BRAND}}</span>
+      <span class="footer-page">1 of 3</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PAGE 2 — EXECUTIVE SUMMARY + VECTORS + SPEC
+══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="cover-stripe"></div>
+  <div class="cover-stripe-gold"></div>
+
+  <div class="page-header">
+    <div class="page-header-left">{{TOKEN_NAME}} / {{TOKEN_SYMBOL}}</div>
+    <div class="page-header-right">Risk Assessment · {{GENERATION_DATE}}</div>
+  </div>
+
+  <div class="section" style="padding-bottom:0;">
+    <div class="section-label">
+      <span class="section-num">§ 1</span>
+      <span class="section-title">Executive Summary</span>
+    </div>
+    <div class="score-row">
+      <div class="score-cell">
+        <div class="score-cell-label">Overall Risk Score</div>
+        <div class="score-cell-value {{OVERALL_SCORE_CELL_CLASS}}">{{OVERALL_RISK_SCORE}}</div>
+        <div class="score-cell-sub">{{OVERALL_RISK_DESC}}</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-cell-label">Rugpull Risk</div>
+        <div class="score-cell-value {{RUGPULL_SCORE_CELL_CLASS}}">{{RUGPULL_SCORE}}</div>
+        <div class="score-cell-sub">{{RUGPULL_SCORE_DESC}}</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-cell-label">Honeypot Risk</div>
+        <div class="score-cell-value {{HONEYPOT_SCORE_CELL_CLASS}}">{{HONEYPOT_SCORE}}</div>
+        <div class="score-cell-sub">{{HONEYPOT_SCORE_DESC}}</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-cell-label">Assessment Confidence</div>
+        <div class="score-cell-value neutral">{{CONFIDENCE_PCT}}</div>
+        <div class="score-cell-sub">{{CONFIDENCE_DESC}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:20px;">
+    <div class="abstract">{{ABSTRACT_TEXT}}
+      <div class="inline-alert"><strong>Risk Posture:</strong> {{RISK_ALERT_TEXT}}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">
+      <span class="section-num">§ 2</span>
+      <span class="section-title">Risk Vector Analysis</span>
+    </div>
+    <table class="vector-table">
+      <tr>
+        <td class="vector-name">Rugpull</td>
+        <td class="vector-bar-wrap"><div class="vector-track"><div class="vector-fill {{RUGPULL_BAR_CLASS}}" style="width:{{RUGPULL_BAR_WIDTH}}%"></div></div></td>
+        <td class="vector-score">{{RUGPULL_SCORE}}</td>
+        <td class="vector-rating"><span class="rating {{RUGPULL_RATING_CLASS}}">{{RUGPULL_RATING_LABEL}}</span></td>
+      </tr>
+      <tr>
+        <td class="vector-name">Honeypot</td>
+        <td class="vector-bar-wrap"><div class="vector-track"><div class="vector-fill {{HONEYPOT_BAR_CLASS}}" style="width:{{HONEYPOT_BAR_WIDTH}}%"></div></div></td>
+        <td class="vector-score">{{HONEYPOT_SCORE}}</td>
+        <td class="vector-rating"><span class="rating {{HONEYPOT_RATING_CLASS}}">{{HONEYPOT_RATING_LABEL}}</span></td>
+      </tr>
+      <tr>
+        <td class="vector-name">Contract</td>
+        <td class="vector-bar-wrap"><div class="vector-track"><div class="vector-fill {{CONTRACT_BAR_CLASS}}" style="width:{{CONTRACT_BAR_WIDTH}}%"></div></div></td>
+        <td class="vector-score">{{CONTRACT_SCORE}}</td>
+        <td class="vector-rating"><span class="rating {{CONTRACT_RATING_CLASS}}">{{CONTRACT_RATING_LABEL}}</span></td>
+      </tr>
+      <tr>
+        <td class="vector-name">Liquidity</td>
+        <td class="vector-bar-wrap"><div class="vector-track"><div class="vector-fill {{LIQUIDITY_BAR_CLASS}}" style="width:{{LIQUIDITY_BAR_WIDTH}}%"></div></div></td>
+        <td class="vector-score">{{LIQUIDITY_SCORE}}</td>
+        <td class="vector-rating"><span class="rating {{LIQUIDITY_RATING_CLASS}}">{{LIQUIDITY_RATING_LABEL}}</span></td>
+      </tr>
+      <tr>
+        <td class="vector-name">Tax Risk</td>
+        <td class="vector-bar-wrap"><div class="vector-track"><div class="vector-fill {{TAX_BAR_CLASS}}" style="width:{{TAX_BAR_WIDTH}}%"></div></div></td>
+        <td class="vector-score">{{TAX_SCORE}}</td>
+        <td class="vector-rating"><span class="rating {{TAX_RATING_CLASS}}">{{TAX_RATING_LABEL}}</span></td>
+      </tr>
+      <tr>
+        <td class="vector-name">Ownership</td>
+        <td class="vector-bar-wrap"><div class="vector-track"><div class="vector-fill {{OWNERSHIP_BAR_CLASS}}" style="width:{{OWNERSHIP_BAR_WIDTH}}%"></div></div></td>
+        <td class="vector-score">{{OWNERSHIP_SCORE}}</td>
+        <td class="vector-rating"><span class="rating {{OWNERSHIP_RATING_CLASS}}">{{OWNERSHIP_RATING_LABEL}}</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-label">
+      <span class="section-num">§ 3</span>
+      <span class="section-title">Token Overview &amp; Specifications</span>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width:100px;">Field</th>
+          <th style="width:160px;">Value</th>
+          <th style="width:130px;">Specification</th>
+          <th>Interpretation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="field">Name</td>
+          <td class="value">{{TOKEN_NAME}}</td>
+          <td class="interp">Human-readable identifier</td>
+          <td class="interp">{{TOKEN_NAME_INTERP}}</td>
+        </tr>
+        <tr>
+          <td class="field">Symbol</td>
+          <td class="value">{{TOKEN_SYMBOL}}</td>
+          <td class="interp">Market ticker</td>
+          <td class="interp">{{TOKEN_SYMBOL_INTERP}}</td>
+        </tr>
+        <tr>
+          <td class="field">Chain</td>
+          <td class="value">{{TOKEN_CHAIN}}</td>
+          <td class="interp">Deployment network</td>
+          <td class="interp">{{TOKEN_CHAIN_INTERP}}</td>
+        </tr>
+        <tr>
+          <td class="field">Total Supply</td>
+          <td class="value">{{TOKEN_TOTAL_SUPPLY}}</td>
+          <td class="interp">Fixed issued quantity</td>
+          <td class="interp">{{TOKEN_SUPPLY_INTERP}}</td>
+        </tr>
+        <tr>
+          <td class="field">Decimals</td>
+          <td class="value">{{TOKEN_DECIMALS}}</td>
+          <td class="interp">Unit precision</td>
+          <td class="interp">{{TOKEN_DECIMALS_INTERP}}</td>
+        </tr>
+        <tr>
+          <td class="field">Address</td>
+          <td class="value" style="font-size:8.5px;word-break:break-all;">{{CONTRACT_ADDRESS}}</td>
+          <td class="interp">On-chain address</td>
+          <td class="interp">{{CONTRACT_ADDRESS_INTERP}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-footer">
+    <div class="footer-disclaimer">Confidential — for authorised recipients only. Produced by automated analysis; does not guarantee future performance or safety.</div>
+    <div class="footer-right">
+      <span class="footer-brand">{{REPORT_BRAND}}</span>
+      <span class="footer-page">2 of 3</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PAGE 3 — FINDINGS + DISTRIBUTION + VULN + RECS
+══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="cover-stripe"></div>
+  <div class="cover-stripe-gold"></div>
+
+  <div class="page-header">
+    <div class="page-header-left">{{TOKEN_NAME}} / {{TOKEN_SYMBOL}}</div>
+    <div class="page-header-right">Risk Assessment · {{GENERATION_DATE}}</div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">
+      <span class="section-num">§ 4</span>
+      <span class="section-title">Key Findings &amp; Screening Indicators</span>
+    </div>
+    <div class="findings-grid">
+      <div class="finding-cell">
+        <div class="finding-header">
+          <div class="finding-num">01</div>
+          <div class="finding-title">Honeypot Detector</div>
+          <span class="rating {{FINDING_1_RISK_CLASS}}">{{FINDING_1_RISK}}</span>
+        </div>
+        <div class="finding-body">{{FINDING_1_TEXT}}</div>
+      </div>
+      <div class="finding-cell">
+        <div class="finding-header">
+          <div class="finding-num">02</div>
+          <div class="finding-title">Rugpull Detector</div>
+          <span class="rating {{FINDING_2_RISK_CLASS}}">{{FINDING_2_RISK}}</span>
+        </div>
+        <div class="finding-body">{{FINDING_2_TEXT}}</div>
+      </div>
+      <div class="finding-cell">
+        <div class="finding-header">
+          <div class="finding-num">03</div>
+          <div class="finding-title">Age Detector</div>
+          <span class="rating {{FINDING_3_RISK_CLASS}}">{{FINDING_3_RISK}}</span>
+        </div>
+        <div class="finding-body">{{FINDING_3_TEXT}}</div>
+      </div>
+      <div class="finding-cell">
+        <div class="finding-header">
+          <div class="finding-num">04</div>
+          <div class="finding-title">Risk Engine — Honeypot</div>
+          <span class="rating {{FINDING_4_RISK_CLASS}}">{{FINDING_4_RISK}}</span>
+        </div>
+        <div class="finding-body">{{FINDING_4_TEXT}}</div>
+      </div>
+      <div class="finding-cell">
+        <div class="finding-header">
+          <div class="finding-num">05</div>
+          <div class="finding-title">Risk Engine — Critical</div>
+          <span class="rating {{FINDING_5_RISK_CLASS}}">{{FINDING_5_RISK}}</span>
+        </div>
+        <div class="finding-body">{{FINDING_5_TEXT}}</div>
+      </div>
+      <div class="finding-cell">
+        <div class="finding-header">
+          <div class="finding-num">06</div>
+          <div class="finding-title">Risk Engine — Liquidity</div>
+          <span class="rating {{FINDING_6_RISK_CLASS}}">{{FINDING_6_RISK}}</span>
+        </div>
+        <div class="finding-body">{{FINDING_6_TEXT}}</div>
+      </div>
+      <div class="finding-cell">
+        <div class="finding-header">
+          <div class="finding-num">07</div>
+          <div class="finding-title">Risk Engine — Token Age</div>
+          <span class="rating {{FINDING_7_RISK_CLASS}}">{{FINDING_7_RISK}}</span>
+        </div>
+        <div class="finding-body">{{FINDING_7_TEXT}}</div>
+      </div>
+      <div class="finding-cell">
+        <div class="finding-header">
+          <div class="finding-num">08</div>
+          <div class="finding-title">Rugpull Heuristics</div>
+          <span class="rating {{FINDING_8_RISK_CLASS}}">{{FINDING_8_RISK}}</span>
+        </div>
+        <div class="finding-body">{{FINDING_8_TEXT}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">
+      <span class="section-num">§ 5</span>
+      <span class="section-title">Holder Distribution &amp; Concentration Risk</span>
+    </div>
+    <div class="dist-bar">
+      <div class="dist-seg top10" style="flex:{{DIST_TOP10_FLEX}}">{{DIST_TOP10_PCT}}%</div>
+      <div class="dist-seg top1"  style="flex:{{DIST_TOP1_FLEX}}">{{DIST_TOP1_PCT}}%</div>
+      <div class="dist-seg rest"  style="flex:{{DIST_REST_FLEX}}">{{DIST_REST_PCT}}%</div>
+    </div>
+    <div class="dist-legend">
+      <div class="legend-item"><div class="legend-swatch top10"></div>Top 10 Wallets — {{DIST_TOP10_PCT}}%</div>
+      <div class="legend-item"><div class="legend-swatch top1"></div>Single Largest Holder — {{DIST_TOP1_PCT}}%</div>
+      <div class="legend-item"><div class="legend-swatch rest"></div>Residual Distribution — {{DIST_REST_PCT}}%</div>
+    </div>
+    <div class="dist-cards">
+      <div class="dist-card">
+        <div class="dist-card-pct">{{DIST_TOP10_PCT}}%</div>
+        <div class="dist-card-title">Top 10 Wallets</div>
+        <div class="dist-card-body">{{DIST_TOP10_ANALYSIS}}</div>
+      </div>
+      <div class="dist-card">
+        <div class="dist-card-pct danger">{{DIST_TOP1_PCT}}%</div>
+        <div class="dist-card-title">Single Largest Holder</div>
+        <div class="dist-card-body">{{DIST_TOP1_ANALYSIS}}</div>
+      </div>
+      <div class="dist-card">
+        <div class="dist-card-pct ok">{{DIST_REST_PCT}}%</div>
+        <div class="dist-card-title">Residual Distribution</div>
+        <div class="dist-card-body">{{DIST_REST_ANALYSIS}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">
+      <span class="section-num">§ 6</span>
+      <span class="section-title">Detailed Vulnerability Assessment</span>
+    </div>
+    <div class="vuln-grid">
+      <div class="vuln-card">
+        <div class="vuln-card-head">
+          <div class="vuln-card-title">Honeypot Risk</div>
+          <span class="rating high">High</span>
+        </div>
+        <div class="vuln-section-title">Overview</div>
+        <div class="vuln-text">{{DETAIL_HONEYPOT_OVERVIEW}}</div>
+        <div class="vuln-section-title">Technical Concerns</div>
+        <div class="vuln-text">{{DETAIL_HONEYPOT_TECHNICAL}}</div>
+        <div class="vuln-section-title">Investor Implications</div>
+        <div class="vuln-text">{{DETAIL_HONEYPOT_INVESTOR}}</div>
+      </div>
+      <div class="vuln-card">
+        <div class="vuln-card-head">
+          <div class="vuln-card-title">Rugpull Risk</div>
+          <span class="rating high">High</span>
+        </div>
+        <div class="vuln-section-title">Overview</div>
+        <div class="vuln-text">{{DETAIL_RUGPULL_OVERVIEW}}</div>
+        <div class="vuln-section-title">Technical Concerns</div>
+        <div class="vuln-text">{{DETAIL_RUGPULL_TECHNICAL}}</div>
+        <div class="vuln-section-title">Investor Implications</div>
+        <div class="vuln-text">{{DETAIL_RUGPULL_INVESTOR}}</div>
+      </div>
+      <div class="vuln-card">
+        <div class="vuln-card-head">
+          <div class="vuln-card-title">Liquidity Risk</div>
+          <span class="rating caution">Caution</span>
+        </div>
+        <div class="vuln-section-title">Overview</div>
+        <div class="vuln-text">{{DETAIL_LIQUIDITY_OVERVIEW}}</div>
+        <div class="vuln-section-title">Technical Concerns</div>
+        <div class="vuln-text">{{DETAIL_LIQUIDITY_TECHNICAL}}</div>
+        <div class="vuln-section-title">Investor Implications</div>
+        <div class="vuln-text">{{DETAIL_LIQUIDITY_INVESTOR}}</div>
+      </div>
+      <div class="vuln-card">
+        <div class="vuln-card-head">
+          <div class="vuln-card-title">Token Age Risk</div>
+          <span class="rating caution">Caution</span>
+        </div>
+        <div class="vuln-section-title">Overview</div>
+        <div class="vuln-text">{{DETAIL_TOKENAGE_OVERVIEW}}</div>
+        <div class="vuln-section-title">Technical Concerns</div>
+        <div class="vuln-text">{{DETAIL_TOKENAGE_TECHNICAL}}</div>
+        <div class="vuln-section-title">Investor Implications</div>
+        <div class="vuln-text">{{DETAIL_TOKENAGE_INVESTOR}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">
+      <span class="section-num">§ 7</span>
+      <span class="section-title">Recommendations &amp; Conclusion</span>
+    </div>
+    <div class="rec-cols">
+      <div>
+        <div class="rec-group-title">For Investors &amp; Users</div>
+        <div class="rec-item"><div class="rec-bullet">R1</div><div class="rec-text">{{REC_USER_1}}</div></div>
+        <div class="rec-item"><div class="rec-bullet">R2</div><div class="rec-text">{{REC_USER_2}}</div></div>
+        <div class="rec-item"><div class="rec-bullet">R3</div><div class="rec-text">{{REC_USER_3}}</div></div>
+        <div class="rec-item"><div class="rec-bullet">R4</div><div class="rec-text">{{REC_USER_4}}</div></div>
+      </div>
+      <div>
+        <div class="rec-group-title">For Developers</div>
+        <div class="rec-item"><div class="rec-bullet">D1</div><div class="rec-text">{{REC_DEV_1}}</div></div>
+        <div class="rec-item"><div class="rec-bullet">D2</div><div class="rec-text">{{REC_DEV_2}}</div></div>
+        <div class="rec-item"><div class="rec-bullet">D3</div><div class="rec-text">{{REC_DEV_3}}</div></div>
+        <div class="rec-item"><div class="rec-bullet">D4</div><div class="rec-text">{{REC_DEV_4}}</div></div>
+      </div>
+    </div>
+    <div class="conclusion-box">
+      <div class="conclusion-label">Final Conclusion — {{OVERALL_RISK_LABEL}}</div>
+      <div class="conclusion-text">{{FINAL_CONCLUSION_TEXT}}</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="footer-disclaimer">{{DISCLAIMER_TEXT}}</div>
+    <div class="footer-right">
+      <span class="footer-brand">{{REPORT_BRAND}}</span>
+      <span class="footer-page">3 of 3</span>
+    </div>
+  </div>
+</div>
+
+<button class="print-btn no-print" onclick="window.print()">Print Report</button>
+
+</body>
+</html>

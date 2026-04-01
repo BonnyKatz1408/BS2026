@@ -1,0 +1,9 @@
+flask
+pydantic
+web3
+python-dotenv
+requests
+google-generativeai
+slither-analyzer
+pymysql
+
