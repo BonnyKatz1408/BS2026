@@ -4,7 +4,7 @@
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 - **Python 3.8+**
@@ -358,42 +358,4 @@ gunicorn -w 4 -b 0.0.0.0:5000 main:app
 
 ---
 
-## 🛠️ Troubleshooting
 
-### Authentication issues (401 errors)
-- API endpoints are **public** - no auth required for `/api/v1/analyze`
-- Dashboard requires login to access `/dashboard` page
-
-### Graphs not showing in dashboard
-- Ensure CORS is enabled (Flask-CORS installed)
-- Check browser console for fetch errors
-- Verify API endpoint is reachable at `http://127.0.0.1:5000`
-
-### MySQL connection errors
-- Verify MySQL server is running: `mysql -u root -p`
-- Check `.env` credentials match your MySQL setup
-- Create database: `CREATE DATABASE blocksentinel;`
-
-### Etherscan rate limits
-- Use Etherscan Free API (~5 calls/sec)
-- Upgrade to Pro account for higher limits
-
----
-
-## ✅ First Run Checklist
-
-- [ ] Create MySQL database: `CREATE DATABASE blocksentinel;`
-- [ ] Configure `.env` file with API keys and database credentials
-- [ ] Run `pip install -r requirements.txt`
-- [ ] Start Flask: `python main.py`
-- [ ] Navigate to `http://127.0.0.1:5000`
-- [ ] Create user account (signup)
-- [ ] Login and navigate to dashboard
-- [ ] Enter a contract address
-- [ ] Click "ANALYZE" button
-- [ ] Wait 1-2 minutes for analysis to complete
-- [ ] Verify risk cards, charts, and analysis notes populate
-
----
-
-**Made with ❤️ for Ethereum token security.**
